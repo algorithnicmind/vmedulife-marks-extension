@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.1.1] - 2026-04-26
+
+### Fixed
+
+- **Filename sanitization (security)** — CSV download filenames now strip filesystem-reserved characters (`< > : " / \ | ? *`) and path traversal sequences to prevent malformed or potentially exploitable filenames from user-supplied student names.
+- **Null check on _lastResult** — Both `downloadCSV()` and `downloadPDF()` now validate that `_lastResult` is non-null before attempting export, preventing runtime errors when called before data is loaded.
+- **CSV field escaping (RFC 4180)** — All CSV field values are now escaped per RFC 4180: fields containing commas, double quotes, or newlines are properly quoted with internal quotes doubled. Prevents malformed CSV output for names or subjects containing special characters.
+- **UTF-8 BOM for Excel** — CSV files now include a UTF-8 BOM (`\uFEFF`) prefix to ensure Microsoft Excel correctly interprets non-ASCII characters (e.g., names with diacritics).
+- **Popup blocker compatibility** — `downloadPDF()` now performs robust popup blocker detection (checks `window.closed` property) and provides a user-friendly error message with guidance on allowing popups.
+- **Memory management** — `_lastResult` is now reset to `null` when the panel is closed via `closePanel()`, freeing parsed result data from memory across the panel lifecycle.
+- **Error handling in exports** — Both `downloadCSV()` and `downloadPDF()` are now wrapped in try/catch blocks with user-facing `alert()` messages on failure, replacing silent failures.
+- **Web-safe font fallback** — Print stylesheet now uses a comprehensive font fallback stack (`Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif`) to ensure proper rendering even if the Inter font fails to load.
+
+### Documentation
+
+- Added `.gitignore` addition to CHANGELOG
+
 ## [1.1.0] - 2026-04-03
 
 ### Added

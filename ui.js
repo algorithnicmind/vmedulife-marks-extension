@@ -16,7 +16,7 @@
  * - Performance bar chart visualization
  *
  * @author vmedulife-marks-extension contributors
- * @version 1.0.1
+ * @version 1.1.1
  * @license MIT
  */
 
@@ -101,6 +101,40 @@
   function num(val, fb) {
     var n = parseFloat(val);
     return isNaN(n) ? (fb || 0) : n;
+  }
+
+  /**
+   * Sanitizes a string for safe use as a filename.
+   * Removes filesystem-reserved characters and trims to a reasonable length.
+   *
+   * @param {string} name - Raw name to sanitize
+   * @returns {string} Sanitized filename-safe string
+   */
+  function sanitizeFilename(name) {
+    if (!name) return 'unknown';
+    return String(name)
+      .replace(/[<>:"\/\\|?*\x00-\x1F]/g, '')
+      .replace(/\.{2,}/g, '.')
+      .replace(/\s+/g, '_')
+      .replace(/^[\s._]+|[\s._]+$/g, '')
+      .substring(0, 100)
+      || 'unknown';
+  }
+
+  /**
+   * Escapes a CSV field value per RFC 4180.
+   * Fields containing commas, double quotes, or newlines are wrapped in
+   * double quotes, with any existing double quotes doubled.
+   *
+   * @param {*} value - Field value to escape
+   * @returns {string} RFC 4180 compliant CSV field
+   */
+  function escapeCSVField(value) {
+    var str = (value == null) ? '' : String(value);
+    if (str.indexOf(',') !== -1 || str.indexOf('"') !== -1 || str.indexOf('\n') !== -1 || str.indexOf('\r') !== -1) {
+      return '"' + str.replace(/"/g, '""') + '"';
+    }
+    return str;
   }
 
   /**
@@ -224,50 +258,67 @@
   function generateCSV(r) {
     var lines = [];
     lines.push('Student Name,PRN,Semester,Branch,SGPA,Total Credits,Earned Credits,Failed Subjects');
-    lines.push(
-      '"' + r.name + '",' +
-      '"' + r.prn + '",' +
-      '"' + r.sem + '",' +
-      '"' + r.branch + '",' +
-      (!isFinite(r.sgpa) ? 'N/A' : r.sgpa) + ',' +
-      r.totCr + ',' + r.earnCr + ',' + r.fails
-    );
+    lines.push([
+      escapeCSVField(r.name),
+      escapeCSVField(r.prn),
+      escapeCSVField(r.sem),
+      escapeCSVField(r.branch),
+      escapeCSVField(!isFinite(r.sgpa) ? 'N/A' : r.sgpa),
+      escapeCSVField(r.totCr),
+      escapeCSVField(r.earnCr),
+      escapeCSVField(r.fails)
+    ].join(','));
     lines.push('');
     lines.push('Subject,Code,Type,Overall,Max,Percentage,Grade,GP,Credits,Obtained Credits,Credit Points,Internal Scored,Internal Max,Internal %,External Scored,External Max,External %,Practical Scored,Practical Max,Practical %');
     r.subs.forEach(function (s) {
       var row = [
-        '"' + (s.name || '').replace(/"/g, '""') + '"',
-        '"' + (s.code || '').replace(/"/g, '""') + '"',
-        s.type,
-        isNaN(s.overall) ? '' : s.overall,
-        isNaN(s.max) ? '' : s.max,
-        isNaN(s.pct) ? '' : s.pct,
-        s.grade,
-        isNaN(s.gp) ? '' : s.gp,
-        isNaN(s.credits) ? '' : s.credits,
-        isNaN(s.obtCrd) ? '' : s.obtCrd,
-        isNaN(s.cp) ? '' : s.cp,
-        s.type === 'theory' ? (isNaN(s.intSec) ? '' : s.intSec) : '',
-        s.type === 'theory' ? (isNaN(s.intMax) ? '' : s.intMax) : '',
-        s.type === 'theory' ? (isNaN(s.intPct) ? '' : Math.round(s.intPct)) : '',
-        s.type === 'theory' ? (isNaN(s.extSec) ? '' : s.extSec) : '',
-        s.type === 'theory' ? (isNaN(s.extMax) ? '' : s.extMax) : '',
-        s.type === 'theory' ? (isNaN(s.extPct) ? '' : s.extPct.toFixed(1)) : '',
-        s.type === 'practical' ? (isNaN(s.practSec) ? '' : s.practSec) : '',
-        s.type === 'practical' ? (isNaN(s.practMax) ? '' : s.practMax) : '',
-        s.type === 'practical' ? (isNaN(s.practPct) ? '' : s.practPct) : ''
+        escapeCSVField(s.name || ''),
+        escapeCSVField(s.code || ''),
+        escapeCSVField(s.type),
+        escapeCSVField(isNaN(s.overall) ? '' : s.overall),
+        escapeCSVField(isNaN(s.max) ? '' : s.max),
+        escapeCSVField(isNaN(s.pct) ? '' : s.pct),
+        escapeCSVField(s.grade),
+        escapeCSVField(isNaN(s.gp) ? '' : s.gp),
+        escapeCSVField(isNaN(s.credits) ? '' : s.credits),
+        escapeCSVField(isNaN(s.obtCrd) ? '' : s.obtCrd),
+        escapeCSVField(isNaN(s.cp) ? '' : s.cp),
+        escapeCSVField(s.type === 'theory' ? (isNaN(s.intSec) ? '' : s.intSec) : ''),
+        escapeCSVField(s.type === 'theory' ? (isNaN(s.intMax) ? '' : s.intMax) : ''),
+        escapeCSVField(s.type === 'theory' ? (isNaN(s.intPct) ? '' : Math.round(s.intPct)) : ''),
+        escapeCSVField(s.type === 'theory' ? (isNaN(s.extSec) ? '' : s.extSec) : ''),
+        escapeCSVField(s.type === 'theory' ? (isNaN(s.extMax) ? '' : s.extMax) : ''),
+        escapeCSVField(s.type === 'theory' ? (isNaN(s.extPct) ? '' : s.extPct.toFixed(1)) : ''),
+        escapeCSVField(s.type === 'practical' ? (isNaN(s.practSec) ? '' : s.practSec) : ''),
+        escapeCSVField(s.type === 'practical' ? (isNaN(s.practMax) ? '' : s.practMax) : ''),
+        escapeCSVField(s.type === 'practical' ? (isNaN(s.practPct) ? '' : s.practPct) : '')
       ];
       lines.push(row.join(','));
     });
     return lines.join('\r\n');
   }
 
-  /** Downloads marks data as a CSV file. */
+  /**
+   * Downloads marks data as a CSV file.
+   * Includes UTF-8 BOM for proper character display in Microsoft Excel.
+   * Filename is sanitized to remove filesystem-unsafe characters.
+   */
   function downloadCSV() {
-    if (!_lastResult) return;
-    var r = _lastResult;
-    var filename = 'marks_' + r.name.replace(/\s+/g, '_') + '_Sem' + r.sem + '.csv';
-    downloadFile(generateCSV(r), filename, 'text/csv;charset=utf-8');
+    if (!_lastResult) {
+      log('downloadCSV: no data available');
+      return;
+    }
+    try {
+      var r = _lastResult;
+      var safeName = sanitizeFilename(r.name);
+      var safeSem = sanitizeFilename(String(r.sem));
+      var filename = 'marks_' + safeName + '_Sem' + safeSem + '.csv';
+      var csvContent = '\uFEFF' + generateCSV(r);
+      downloadFile(csvContent, filename, 'text/csv;charset=utf-8');
+    } catch (e) {
+      log('downloadCSV error:', e);
+      alert('Failed to download CSV. Please try again.');
+    }
   }
 
   /**
@@ -284,7 +335,7 @@
     h += '<style>';
     h += '@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");';
     h += '*{margin:0;padding:0;box-sizing:border-box}';
-    h += 'body{font-family:"Inter",system-ui,sans-serif;color:#1a1a1a;padding:48px;font-size:12px;line-height:1.5}';
+    h += 'body{font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;color:#1a1a1a;padding:48px;font-size:12px;line-height:1.5}';
     h += '.hdr{margin-bottom:28px;border-bottom:2px solid #111;padding-bottom:14px}';
     h += '.hdr h1{font-size:22px;font-weight:700;margin-bottom:4px}';
     h += '.hdr .meta{color:#666;font-size:12px} .hdr .meta span{margin-right:16px}';
@@ -384,14 +435,31 @@
     return h;
   }
 
-  /** Opens a print-ready page for PDF download. */
+  /**
+   * Opens a print-ready page for PDF download.
+   * Includes popup blocker detection and error handling.
+   */
   function downloadPDF() {
-    if (!_lastResult) return;
-    var w = window.open('', '_blank');
-    if (!w) { alert('Please allow popups for this site to download PDF.'); return; }
-    w.document.write(buildPrintHTML(_lastResult));
-    w.document.close();
-    setTimeout(function () { w.focus(); w.print(); }, 600);
+    if (!_lastResult) {
+      log('downloadPDF: no data available');
+      return;
+    }
+    try {
+      var w = window.open('', '_blank');
+      if (!w || w.closed || typeof w.closed === 'undefined') {
+        alert('Please allow popups for this site to download PDF.\n\nTip: Look for a popup-blocked icon in your browser\'s address bar.');
+        return;
+      }
+      w.document.write(buildPrintHTML(_lastResult));
+      w.document.close();
+      setTimeout(function () {
+        try { w.focus(); w.print(); }
+        catch (e) { log('downloadPDF print error:', e); }
+      }, 600);
+    } catch (e) {
+      log('downloadPDF error:', e);
+      alert('Failed to generate PDF. Please try again.');
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -973,6 +1041,7 @@
     if (!p) return;
     p.classList.add('vm-closing');
     if (_kh) { document.removeEventListener('keydown', _kh); _kh = null; }
+    _lastResult = null;
     p.addEventListener('transitionend', function h() { p.removeEventListener('transitionend', h); p.remove(); });
     setTimeout(function () { var el = document.getElementById(PANEL_ID); if (el) el.remove(); }, 500);
   }
