@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 - **Filename sanitization (security)** — CSV download filenames now strip filesystem-reserved characters (`< > : " / \ | ? *`) and path traversal sequences to prevent malformed or potentially exploitable filenames from user-supplied student names.
+- **XSS Vulnerability in `esc()` (security)** — The `esc()` function now escapes single quotes (`'`) to `&#39;` to prevent theoretical XSS via HTML injection when rendering student names with apostrophes.
 - **Null check on _lastResult** — Both `downloadCSV()` and `downloadPDF()` now validate that `_lastResult` is non-null before attempting export, preventing runtime errors when called before data is loaded.
 - **CSV field escaping (RFC 4180)** — All CSV field values are now escaped per RFC 4180: fields containing commas, double quotes, or newlines are properly quoted with internal quotes doubled. Prevents malformed CSV output for names or subjects containing special characters.
 - **UTF-8 BOM for Excel** — CSV files now include a UTF-8 BOM (`\uFEFF`) prefix to ensure Microsoft Excel correctly interprets non-ASCII characters (e.g., names with diacritics).
