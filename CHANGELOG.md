@@ -18,6 +18,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **Error handling in exports** — Both `downloadCSV()` and `downloadPDF()` are now wrapped in try/catch blocks with user-facing `alert()` messages on failure, replacing silent failures.
 - **Web-safe font fallback** — Print stylesheet now uses a comprehensive font fallback stack (`Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif`) to ensure proper rendering even if the Inter font fails to load.
 
+### Changed
+
+- **Least Privilege (security)** — Removed unused `storage` permission from `manifest.json`. The extension communicates strictly via local DOM events and does not use the `chrome.storage` API.
+
 ### Documentation
 
 - Added `.gitignore` addition to CHANGELOG

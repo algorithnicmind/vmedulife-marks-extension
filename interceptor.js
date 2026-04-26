@@ -9,7 +9,7 @@
  * and dispatches a custom DOM event for the UI script to render the marks panel.
  *
  * @author vmedulife-marks-extension contributors
- * @version 1.0.1
+ * @version 1.1.1
  * @license MIT
  */
 
