@@ -157,6 +157,7 @@
     var _send = xhr.send;
     xhr.send = function () {
       xhr.addEventListener('load', function () {
+        log('XHR →', _url, 'status:', xhr.status);
         if (_url.indexOf(TARGET) !== -1) {
           log('XHR load:', _url, 'status:', xhr.status);
           handleResponse(_url, xhr.responseText);
@@ -195,6 +196,7 @@
     var url = typeof input === 'string' ? input : (input && input.url) || '';
 
     return origFetch.apply(this, arguments).then(function (response) {
+      log('fetch →', url, 'status:', response.status);
       if (url.indexOf(TARGET) !== -1) {
         log('fetch response:', url, 'status:', response.status);
         response.clone().text().then(function (txt) {
