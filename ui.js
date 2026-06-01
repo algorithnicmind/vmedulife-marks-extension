@@ -25,7 +25,7 @@
 
   if (document.getElementById('vmedulife-marks-panel')) return;
 
-  var DEBUG = false;
+  var DEBUG = true;
   function log() {
     if (DEBUG) console.log.apply(console, ['[ui.js]'].concat(Array.from(arguments)));
   }

@@ -20,7 +20,7 @@
   var TARGET = 'studentResult.php';
 
   /** @type {boolean} Enable debug logging (disable in production) */
-  var DEBUG = false;
+  var DEBUG = true;
 
   /** @type {boolean} Prevents multiple firings for the same page load */
   var hasFired = false;
